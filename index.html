@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>useRef</title>
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body style="font-family:Arial, sans-serif;">
+  <div id="root"></div>
+  <script type="text/babel">
+
+    function Stopwatch() {
+      const [segundos, setSegundos] = React.useState(0);
+      const [play, setPlay] = React.useState(false);
+      const [laps, setLaps] = React.useState([]);
+      const ref = React.useRef(null);
+
+      React.useEffect(function () {
+        if (play) {
+          ref.current = setInterval(function () {
+            setSegundos(function (prev) {
+              return prev + 1;
+            });
+          }, 1000);
+        } else if (ref.current) {
+          clearInterval(ref.current);
+          ref.current = null;
+        }
+
+        return function () {
+          if (ref.current) {
+            clearInterval(ref.current);
+          }
+        };
+      }, [play]);
+
+      function toggleStartPause() {
+        setPlay(function (prev) {
+          return !prev;
+        });
+      }
+
+      function reset() {
+        setPlay(false);
+        setSegundos(0);
+      }
+
+      function guardarLaps() {
+        if (segundos > 0) {
+          setLaps(function (prev) {
+            return prev.concat(segundos);
+          });
+        }
+      }
+
+      function tiempo(sec) {
+        var mins = Math.floor(sec / 60);
+        var secs = sec % 60;
+        return (
+          mins.toString().padStart(2, '0') +
+          ':' +
+          secs.toString().padStart(2, '0')
+        );
+      }
+
+      return (
+        <div style={{
+          maxWidth: '400px',
+          marginLeft: '20px',
+        }}>
+          <h1 style={{ textAlign: 'center', margin: '10px 0' }}>Cronómetro</h1>
+          <h2 style={{ textAlign: 'center', margin: '10px 0', fontSize: '2em' }}>
+            {tiempo(segundos)}
+          </h2>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+            <button
+              onClick={toggleStartPause}
+              style={{
+                flex: 1,
+                margin: '0 5px',
+                padding: '10px',
+                fontSize: '14px',
+                border: 'none',
+                borderRadius: '5px',
+                backgroundColor: '#e0e0e0',
+                cursor: 'pointer'
+              }}
+            >
+              {play ? 'Pausar' : 'Iniciar'}
+            </button>
+            <button
+              onClick={reset}
+              style={{
+                flex: 1,
+                margin: '0 5px',
+                padding: '10px',
+                fontSize: '14px',
+                border: 'none',
+                borderRadius: '5px',
+                backgroundColor: '#e0e0e0',
+                cursor: 'pointer'
+              }}
+            >
+              Reiniciar
+            </button>
+            <button
+              onClick={guardarLaps}
+              style={{
+                flex: 1,
+                margin: '0 5px',
+                padding: '10px',
+                fontSize: '14px',
+                border: 'none',
+                borderRadius: '5px',
+                backgroundColor: '#e0e0e0',
+                cursor: 'pointer'
+              }}
+            >
+              Guardar
+            </button>
+          </div>
+
+          <h3 style={{ marginTop: '30px' }}>Laps</h3>
+          <ol style={{ paddingLeft: '20px' }}>
+            {laps.map(function (time, index) {
+              return (
+                <li key={index} style={{ marginBottom: '5px' }}>
+                  Sesión {index + 1}: {tiempo(time)}
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      );
+    }
+
+    function App() {
+      return <Stopwatch />;
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
